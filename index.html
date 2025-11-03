@@ -107,7 +107,6 @@
 
     if (!name || name.length < 2) { showError('Please enter your full name.'); return; }
     if (!email || !(form.email.checkValidity && form.email.checkValidity())) { showError('Please enter a valid email.'); return; }
-    if (!mobile || mobile.replace(/\D/g, '').length < 7) { showError('Please enter a valid mobile number.'); return; }
     if (!consent) { showError('Please give consent to proceed.'); return; }
 
     submitBtn.disabled = true;
@@ -117,41 +116,25 @@
       // Build FormData from the form
       const formData = new FormData(form);
 
-      // POST to Formspree. Ask for JSON back so we can check status.
+      // POST to Formspree, ask for JSON back
       const res = await fetch(form.action, {
         method: 'POST',
         body: formData,
-        headers: { 'Accept': 'application/json' } // request JSON response
+        headers: { 'Accept': 'application/json' }
       });
 
-      // If Formspree returns JSON with ok status, redirect. Many Formspree endpoints respond 200 with JSON.
       if (res.ok) {
-        // Optionally check JSON response for errors
-        try {
-          const j = await res.json().catch(()=>({}));
-          // If the response seems to indicate an error, show it (otherwise redirect)
-          if (j && j.ok === false) {
-            showError('Submission failed: ' + (j.error || 'server returned an error'));
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Access Document';
-            return;
-          }
-        } catch(_) { /* ignore parse errors */ }
-
-        // Success — redirect user to the PDF
+        // Redirect user to the PDF
         window.location.href = PDF;
         return;
       } else {
-        // Non-OK HTTP status
         const text = await res.text().catch(()=>null);
         showError('Submission failed. Server replied: ' + (text || res.status));
       }
     } catch (fetchErr) {
-      // Network / CORS / other error — fallback: open PDF in new tab so user still gets access
       console.error('Fetch error:', fetchErr);
-      // fallback: try to open pdf in new tab and notify user
       window.open(PDF, '_blank');
-      showError('Could not save submission to server — document opened in a new tab. We will try to store responses later.');
+      showError('Could not save submission — document opened in new tab.');
     }
 
     submitBtn.disabled = false;
