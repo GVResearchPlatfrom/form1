@@ -80,7 +80,7 @@
 </div>
 
 <script>
-/* ✅ Client-side validation before normal form POST */
+/* Robust client-side validation using native HTML5 email validity */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
@@ -88,8 +88,19 @@
 
   function validate(data){
     if (!data.name || data.name.trim().length < 2) return 'Please enter your full name.';
-    if (!data.email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)) return 'Please enter a valid email.';
-    if (!data.mobile || !/\\d{7,}/.test(data.mobile.replace(/\\D/g,''))) return 'Please enter a valid mobile number.';
+
+    // Use native HTML5 validation for email (more reliable)
+    const emailEl = form.querySelector('input[name="email"]');
+    if (!emailEl || !emailEl.checkValidity()) return 'Please enter a valid email.';
+
+    // mobile: require at least 7 digits
+    const digits = (data.mobile || '').replace(/\D/g, '');
+    if (!digits || digits.length < 7) return 'Please enter a valid mobile number.';
+
+    // consent must be checked
+    const consentEl = form.querySelector('input[name="consent"]');
+    if (!consentEl || !consentEl.checked) return 'Please give consent to proceed.';
+
     return '';
   }
 
@@ -100,11 +111,11 @@
     submitBtn.textContent = 'Processing...';
 
     const data = {
-      name: form.name.value.trim(),
-      org: form.org.value.trim(),
-      email: form.email.value.trim(),
-      mobile: form.mobile.value.trim(),
-      consent: form.consent.checked ? 'true' : ''
+      name: (form.name.value || '').trim(),
+      org: (form.org.value || '').trim(),
+      email: (form.email.value || '').trim(),
+      mobile: (form.mobile.value || '').trim(),
+      consent: !!(form.consent && form.consent.checked)
     };
 
     const v = validate(data);
@@ -116,7 +127,8 @@
       return;
     }
 
-    // Submit form directly to Apps Script endpoint
+    // All good — submit the form normally to your Apps Script endpoint
+    // (target="_top" ensures full-window redirect from Apps Script response)
     form.submit();
   });
 })();
