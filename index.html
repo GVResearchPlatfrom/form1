@@ -31,7 +31,7 @@
     <h1 id="formTitle">Quick Access Form</h1>
     <p class="lead">Please enter your details to access the document.</p>
 
-    <!-- Formspree form -->
+    <!-- ✅ Formspree Form -->
     <form id="shortForm"
           action="https://formspree.io/f/xvgvnzgv"
           method="POST"
@@ -44,8 +44,8 @@
         </div>
 
         <div>
-          <label for="org">Organisation / Company</label>
-          <input id="org" name="org" type="text" placeholder="Acme Labs" />
+          <label for="org">Organisation / Company *</label>
+          <input id="org" name="org" type="text" required placeholder="Acme Labs" />
         </div>
 
         <div>
@@ -55,7 +55,6 @@
 
         <div>
           <label for="mobile">Mobile Number <span class="small">(optional)</span></label>
-          <!-- NOTICE: no "required" attribute here — phone is optional -->
           <input id="mobile" name="mobile" type="tel" placeholder="+91 91234 56789" />
         </div>
 
@@ -67,7 +66,7 @@
         </div>
       </div>
 
-      <!-- redirect after submit -->
+      <!-- Redirect after successful submission -->
       <input type="hidden" name="_next" value="https://qrco.de/bgQhI7" />
       <input type="hidden" name="_subject" value="New QR Access submission" />
 
@@ -78,7 +77,6 @@
         <button type="submit" class="btn-primary" id="submitBtn">Access Document</button>
       </div>
     </form>
-    <!-- end form -->
 
     <p class="small" style="margin-top:12px">Your details will only be used to confirm access.</p>
   </div>
@@ -86,7 +84,7 @@
 
 <script>
 /* Submit via fetch to Formspree, then redirect client-side to PDF.
-   Mobile is OPTIONAL (no validation). */
+   Name, Org, Email, Consent = required; Mobile optional. */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
@@ -103,11 +101,12 @@
     err.style.display = 'none';
 
     const name = (form.name.value || '').trim();
+    const org = (form.org.value || '').trim();
     const email = (form.email.value || '').trim();
-    const mobile = (form.mobile.value || '').trim(); // optional
     const consent = form.consent && form.consent.checked;
 
     if (!name || name.length < 2) { showError('Please enter your full name.'); return; }
+    if (!org || org.length < 2) { showError('Please enter your organisation.'); return; }
     if (!email || !(form.email.checkValidity && form.email.checkValidity())) { showError('Please enter a valid email.'); return; }
     if (!consent) { showError('Please give consent to proceed.'); return; }
 
@@ -123,7 +122,6 @@
       });
 
       if (res.ok) {
-        // redirect client-side to guarantee user access
         window.location.href = PDF;
         return;
       } else {
@@ -132,7 +130,6 @@
       }
     } catch (fetchErr) {
       console.error('Fetch error:', fetchErr);
-      // fallback: open doc in new tab so user gets access even if storing fails
       window.open(PDF, '_blank');
       showError('Could not save submission — document opened in new tab.');
     }
