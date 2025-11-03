@@ -31,11 +31,11 @@
     <h1 id="formTitle">Quick Access Form</h1>
     <p class="lead">Please enter your details to access the document.</p>
 
-    <!-- ✅ Corrected Form Starts Here -->
+    <!-- ✅ Formspree Form -->
     <form id="shortForm"
-          action="https://script.google.com/macros/s/AKfycbyCsYmfiwe1nPiD2RRq83A5O8m-EnaTNzJp_tyiWgz-u2xpXg9OObla01_9sDbErXb4/exec"
-          method="post"
-          target="_top"
+          action="https://formspree.io/f/xvgvnzgv"
+          method="POST"
+          target="_self"
           novalidate>
       <div class="row">
         <div class="full">
@@ -60,11 +60,16 @@
 
         <div class="full small" style="margin-top:6px">
           <label>
-            <input id="consent" name="consent" type="checkbox" value="on" />
+            <input id="consent" name="consent" type="checkbox" value="Yes" required />
             I consent to my data being used for granting access and follow-up communication.
           </label>
         </div>
       </div>
+
+      <!-- 🔁 Redirect user to your PDF after successful submit -->
+      <input type="hidden" name="_next" value="https://qrco.de/bgQhI7" />
+      <!-- 📩 Optional: change email subject for Formspree notification -->
+      <input type="hidden" name="_subject" value="New QR Access submission" />
 
       <div id="error" class="small" style="color:#b00020;display:none"></div>
 
@@ -73,63 +78,41 @@
         <button type="submit" class="btn-primary" id="submitBtn">Access Document</button>
       </div>
     </form>
-    <!-- ✅ Corrected Form Ends Here -->
+    <!-- ✅ End Formspree Form -->
 
     <p class="small" style="margin-top:12px">Your details will only be used to confirm access.</p>
   </div>
 </div>
 
 <script>
-/* Robust client-side validation using native HTML5 email validity */
+/* ✅ Simple in-browser validation before Formspree submission */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
   const submitBtn = document.getElementById('submitBtn');
 
-  function validate(data){
-    if (!data.name || data.name.trim().length < 2) return 'Please enter your full name.';
-
-    // Use native HTML5 validation for email (more reliable)
-    const emailEl = form.querySelector('input[name="email"]');
-    if (!emailEl || !emailEl.checkValidity()) return 'Please enter a valid email.';
-
-    // mobile: require at least 7 digits
-    const digits = (data.mobile || '').replace(/\D/g, '');
-    if (!digits || digits.length < 7) return 'Please enter a valid mobile number.';
-
-    // consent must be checked
-    const consentEl = form.querySelector('input[name="consent"]');
-    if (!consentEl || !consentEl.checked) return 'Please give consent to proceed.';
-
-    return '';
-  }
-
   form.addEventListener('submit', function(e){
-    e.preventDefault();
     err.style.display = 'none';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const mobile = form.mobile.value.trim();
+    const consent = form.consent.checked;
 
-    const data = {
-      name: (form.name.value || '').trim(),
-      org: (form.org.value || '').trim(),
-      email: (form.email.value || '').trim(),
-      mobile: (form.mobile.value || '').trim(),
-      consent: !!(form.consent && form.consent.checked)
-    };
-
-    const v = validate(data);
-    if (v){
-      err.textContent = v;
-      err.style.display = 'block';
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Access Document';
-      return;
+    if (!name || name.length < 2) {
+      e.preventDefault(); err.textContent = 'Please enter your full name.'; err.style.display = 'block'; return;
+    }
+    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
+      e.preventDefault(); err.textContent = 'Please enter a valid email.'; err.style.display = 'block'; return;
+    }
+    if (!mobile || mobile.replace(/\\D/g, '').length < 7) {
+      e.preventDefault(); err.textContent = 'Please enter a valid mobile number.'; err.style.display = 'block'; return;
+    }
+    if (!consent) {
+      e.preventDefault(); err.textContent = 'Please give consent to proceed.'; err.style.display = 'block'; return;
     }
 
-    // All good — submit the form normally to your Apps Script endpoint
-    // (target="_top" ensures full-window redirect from Apps Script response)
-    form.submit();
+    // if all good, let Formspree handle submission + redirect
+    submitBtn.textContent = 'Processing...';
   });
 })();
 </script>
