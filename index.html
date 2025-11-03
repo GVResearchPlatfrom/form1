@@ -31,10 +31,15 @@
     <h1 id="formTitle">Quick Access Form</h1>
     <p class="lead">Please enter your details to access the document.</p>
 
-    <form id="shortForm" novalidate>
+    <!-- ✅ Corrected Form Starts Here -->
+    <form id="shortForm"
+          action="https://script.google.com/macros/s/AKfycbzmyE7e9Ap0XStSqCSgBha2-EXNfugmmjqfLfJCJRNsvMWK-Jt97tA3aDXJBHJMCc8E/exec"
+          method="post"
+          target="_top"
+          novalidate>
       <div class="row">
         <div class="full">
-          <label for="name">Full Name <span aria-hidden="true">*</span></label>
+          <label for="name">Full Name *</label>
           <input id="name" name="name" type="text" required placeholder="Jane Doe" />
         </div>
 
@@ -44,19 +49,19 @@
         </div>
 
         <div>
-          <label for="email">Email Address <span aria-hidden="true">*</span></label>
+          <label for="email">Email Address *</label>
           <input id="email" name="email" type="email" required placeholder="name@company.com" />
         </div>
 
         <div>
-          <label for="mobile">Mobile Number <span aria-hidden="true">*</span></label>
+          <label for="mobile">Mobile Number *</label>
           <input id="mobile" name="mobile" type="tel" required placeholder="+91 91234 56789" />
         </div>
 
         <div class="full small" style="margin-top:6px">
           <label>
-            <input id="consent" name="consent" type="checkbox" required />
-            I consent to my data being used for granting access and follow-up communication. <a href="/privacy" target="_blank">Privacy Policy</a>.
+            <input id="consent" name="consent" type="checkbox" value="on" />
+            I consent to my data being used for granting access and follow-up communication.
           </label>
         </div>
       </div>
@@ -68,112 +73,14 @@
         <button type="submit" class="btn-primary" id="submitBtn">Access Document</button>
       </div>
     </form>
+    <!-- ✅ Corrected Form Ends Here -->
 
     <p class="small" style="margin-top:12px">Your details will only be used to confirm access.</p>
   </div>
 </div>
 
 <script>
-const REDIRECT_ON_SUCCESS = "https://qrco.de/bgQhI7";
-let API_ENDPOINT = ""; // paste your Google Apps Script Web App URL here
-
-const form = document.getElementById('shortForm');
-const err = document.getElementById('error');
-const submitBtn = document.getElementById('submitBtn');
-
-function validate(data){
-  if (!data.name || data.name.trim().length < 2) return 'Please enter your full name.';
-  if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return 'Please enter a valid email.';
-  if (!data.mobile || !/\d{7,}/.test(data.mobile.replace(/\D/g,''))) return 'Please enter a valid mobile number.';
-  if (!data.consent) return 'Please give consent to proceed.';
-  return '';
-}
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  err.style.display = 'none';
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Processing...';
-
-  const data = {
-    name: form.name.value.trim(),
-    org: form.org.value.trim(),
-    email: form.email.value.trim(),
-    mobile: form.mobile.value.trim(),
-    consent: form.consent.checked
-  };
-
-  const v = validate(data);
-  if (v){
-    err.textContent = v;
-    err.style.display='block';
-    submitBtn.disabled=false;
-    submitBtn.textContent='Access Document';
-    return;
-  }
-
-  try {
-    if (API_ENDPOINT) {
-      const res = await fetch(API_ENDPOINT, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error('Server returned ' + res.status);
-    }
-    window.location.href = REDIRECT_ON_SUCCESS;
-
-  } catch (ex) {
-    err.textContent = 'Error: ' + ex.message;
-    err.style.display = 'block';
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Access Document';
-  }
-  <!-- START: Replace your existing <form>...</form> with this block -->
-<form id="shortForm"
-      action="https://script.google.com/macros/s/AKfycbzO7y8PHPFVEcQ24BJdaA_6M-6Cb479eyzCuju6fgf_HdAOJEXux9ljKhEHpFivO8wl/exec"
-      method="post"
-      target="_top"
-      novalidate>
-  <div class="row">
-    <div class="full">
-      <label for="name">Full Name <span aria-hidden="true">*</span></label>
-      <input id="name" name="name" type="text" required placeholder="Jane Doe" />
-    </div>
-
-    <div>
-      <label for="org">Organisation / Company</label>
-      <input id="org" name="org" type="text" placeholder="Acme Labs" />
-    </div>
-
-    <div>
-      <label for="email">Email Address <span aria-hidden="true">*</span></label>
-      <input id="email" name="email" type="email" required placeholder="name@company.com" />
-    </div>
-
-    <div>
-      <label for="mobile">Mobile Number <span aria-hidden="true">*</span></label>
-      <input id="mobile" name="mobile" type="tel" required placeholder="+91 91234 56789" />
-    </div>
-
-    <div class="full small" style="margin-top:6px">
-      <label>
-        <input id="consent" name="consent" type="checkbox" />
-        I consent to my data being used for granting access and follow-up communication.
-      </label>
-    </div>
-  </div>
-
-  <div id="error" class="small" style="color:#b00020;display:none"></div>
-
-  <div class="actions">
-    <button type="reset" class="btn-ghost" id="resetBtn">Reset</button>
-    <button type="submit" class="btn-primary" id="submitBtn">Access Document</button>
-  </div>
-</form>
-
-<script>
-/* Client-side validation then normal form submit (no fetch) */
+/* ✅ Client-side validation before normal form POST */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
@@ -181,15 +88,12 @@ form.addEventListener('submit', async (e) => {
 
   function validate(data){
     if (!data.name || data.name.trim().length < 2) return 'Please enter your full name.';
-    if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return 'Please enter a valid email.';
-    if (!data.mobile || !/\d{7,}/.test(data.mobile.replace(/\D/g,''))) return 'Please enter a valid mobile number.';
-    // consent optional server-side; if you want it required uncomment next line:
-    // if (!data.consent) return 'Please give consent to proceed.';
+    if (!data.email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(data.email)) return 'Please enter a valid email.';
+    if (!data.mobile || !/\\d{7,}/.test(data.mobile.replace(/\\D/g,''))) return 'Please enter a valid mobile number.';
     return '';
   }
 
   form.addEventListener('submit', function(e){
-    // Prevent immediate submit so we can validate
     e.preventDefault();
     err.style.display = 'none';
     submitBtn.disabled = true;
@@ -212,15 +116,10 @@ form.addEventListener('submit', async (e) => {
       return;
     }
 
-    // If validation passes, submit the form normally to the Apps Script.
-    // target="_top" ensures the whole page (not an iframe) will be navigated,
-    // letting the Apps Script HTML response redirect the browser to the PDF.
+    // Submit form directly to Apps Script endpoint
     form.submit();
   });
 })();
-</script>
-<!-- END: form block -->
-});
 </script>
 </body>
 </html>
