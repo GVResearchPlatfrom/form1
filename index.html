@@ -31,7 +31,7 @@
     <h1 id="formTitle">Quick Access Form</h1>
     <p class="lead">Please enter your details to access the document.</p>
 
-    <!-- Formspree form (final) -->
+    <!-- Formspree form -->
     <form id="shortForm"
           action="https://formspree.io/f/xvgvnzgv"
           method="POST"
@@ -54,8 +54,9 @@
         </div>
 
         <div>
-          <label for="mobile">Mobile Number *</label>
-          <input id="mobile" name="mobile" type="tel" required placeholder="+91 91234 56789" />
+          <label for="mobile">Mobile Number <span class="small">(optional)</span></label>
+          <!-- NOTICE: no "required" attribute here — phone is optional -->
+          <input id="mobile" name="mobile" type="tel" placeholder="+91 91234 56789" />
         </div>
 
         <div class="full small" style="margin-top:6px">
@@ -84,7 +85,8 @@
 </div>
 
 <script>
-/* Submit via fetch to Formspree, then redirect client-side to PDF */
+/* Submit via fetch to Formspree, then redirect client-side to PDF.
+   Mobile is OPTIONAL (no validation). */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
@@ -102,7 +104,7 @@
 
     const name = (form.name.value || '').trim();
     const email = (form.email.value || '').trim();
-    const mobile = (form.mobile.value || '').trim();
+    const mobile = (form.mobile.value || '').trim(); // optional
     const consent = form.consent && form.consent.checked;
 
     if (!name || name.length < 2) { showError('Please enter your full name.'); return; }
@@ -113,10 +115,7 @@
     submitBtn.textContent = 'Processing...';
 
     try {
-      // Build FormData from the form
       const formData = new FormData(form);
-
-      // POST to Formspree, ask for JSON back
       const res = await fetch(form.action, {
         method: 'POST',
         body: formData,
@@ -124,7 +123,7 @@
       });
 
       if (res.ok) {
-        // Redirect user to the PDF
+        // redirect client-side to guarantee user access
         window.location.href = PDF;
         return;
       } else {
@@ -133,6 +132,7 @@
       }
     } catch (fetchErr) {
       console.error('Fetch error:', fetchErr);
+      // fallback: open doc in new tab so user gets access even if storing fails
       window.open(PDF, '_blank');
       showError('Could not save submission — document opened in new tab.');
     }
