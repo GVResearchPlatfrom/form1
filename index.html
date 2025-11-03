@@ -31,7 +31,7 @@
     <h1 id="formTitle">Quick Access Form</h1>
     <p class="lead">Please enter your details to access the document.</p>
 
-    <!-- ✅ Formspree Form -->
+    <!-- Formspree form (final) -->
     <form id="shortForm"
           action="https://formspree.io/f/xvgvnzgv"
           method="POST"
@@ -66,9 +66,8 @@
         </div>
       </div>
 
-      <!-- 🔁 Redirect user to your PDF after successful submit -->
+      <!-- redirect after submit -->
       <input type="hidden" name="_next" value="https://qrco.de/bgQhI7" />
-      <!-- 📩 Optional: change email subject for Formspree notification -->
       <input type="hidden" name="_subject" value="New QR Access submission" />
 
       <div id="error" class="small" style="color:#b00020;display:none"></div>
@@ -78,14 +77,14 @@
         <button type="submit" class="btn-primary" id="submitBtn">Access Document</button>
       </div>
     </form>
-    <!-- ✅ End Formspree Form -->
+    <!-- end form -->
 
     <p class="small" style="margin-top:12px">Your details will only be used to confirm access.</p>
   </div>
 </div>
 
 <script>
-/* ✅ Simple in-browser validation before Formspree submission */
+/* simple client validation */
 (function(){
   const form = document.getElementById('shortForm');
   const err = document.getElementById('error');
@@ -93,26 +92,20 @@
 
   form.addEventListener('submit', function(e){
     err.style.display = 'none';
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const mobile = form.mobile.value.trim();
-    const consent = form.consent.checked;
 
-    if (!name || name.length < 2) {
-      e.preventDefault(); err.textContent = 'Please enter your full name.'; err.style.display = 'block'; return;
-    }
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {
-      e.preventDefault(); err.textContent = 'Please enter a valid email.'; err.style.display = 'block'; return;
-    }
-    if (!mobile || mobile.replace(/\\D/g, '').length < 7) {
-      e.preventDefault(); err.textContent = 'Please enter a valid mobile number.'; err.style.display = 'block'; return;
-    }
-    if (!consent) {
-      e.preventDefault(); err.textContent = 'Please give consent to proceed.'; err.style.display = 'block'; return;
-    }
+    const name = (form.name.value || '').trim();
+    const email = (form.email.value || '').trim();
+    const mobile = (form.mobile.value || '').trim();
+    const consent = form.consent && form.consent.checked;
 
-    // if all good, let Formspree handle submission + redirect
+    if (!name || name.length < 2) { e.preventDefault(); err.textContent = 'Please enter your full name.'; err.style.display='block'; return; }
+    // use native email validity if available
+    if (!email || !(form.email.checkValidity && form.email.checkValidity())) { e.preventDefault(); err.textContent = 'Please enter a valid email.'; err.style.display='block'; return; }
+    if (!mobile || mobile.replace(/\D/g, '').length < 7) { e.preventDefault(); err.textContent = 'Please enter a valid mobile number.'; err.style.display='block'; return; }
+    if (!consent) { e.preventDefault(); err.textContent = 'Please give consent to proceed.'; err.style.display='block'; return; }
+
     submitBtn.textContent = 'Processing...';
+    // let browser submit to Formspree which will redirect to your PDF (_next)
   });
 })();
 </script>
